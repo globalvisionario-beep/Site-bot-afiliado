@@ -48,8 +48,14 @@ Campos opcionais por produto:
 - `"itemId": 123456789`: você escolhe o produto exato. O bot só preenche os dados. O itemId é o último número do link da Shopee (`...-i.SHOPID.ITEMID`).
 - `"palavras_obrigatorias": ["triturador", "eletrico"]`: palavras que o nome do substituto precisa ter.
 - `"preco_minimo"` e `"preco_maximo"`: limites de preço para o substituto.
+- `"categoria": "Cozinha"`: cria os botões de filtro no site (Cozinha, Beleza, Casa...).
+- `"dica": "Uso todo dia"`: uma frase curta sua que aparece no card.
 
 Não reaproveite números de código. O número identifica o produto no vídeo.
+
+## Personalizar o site
+
+No começo do `produtos.json`, em `site`, troque `titulo`, `nome` e `subtitulo`. Em `redes`, cole o link do seu Instagram, TikTok, WhatsApp ou Telegram. Os que ficarem vazios não aparecem. O botão de lua/sol no topo troca entre tema claro e escuro e lembra a escolha do visitante.
 
 ## Usar nos vídeos
 
