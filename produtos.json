@@ -1,12 +1,29 @@
 {
   "site": {
     "titulo": "Achadinhos da Shopee",
-    "subtitulo": "Digite o número que aparece no vídeo e vá direto ao produto."
+    "nome": "Achadinhos",
+    "subtitulo": "Digite o número que aparece no vídeo e vá direto ao produto.",
+    "redes": {
+      "Instagram": "",
+      "TikTok": "",
+      "WhatsApp": "",
+      "Telegram": ""
+    }
   },
   "atualizado_em": null,
   "produtos": [
-    { "codigo": 1, "busca": "mini triturador eletrico" },
-    { "codigo": 2, "busca": "mini processador eletrico" }
+    {
+      "codigo": 1,
+      "busca": "mini triturador eletrico",
+      "categoria": "Cozinha",
+      "dica": ""
+    },
+    {
+      "codigo": 2,
+      "busca": "mini processador eletrico",
+      "categoria": "Cozinha",
+      "dica": ""
+    }
   ],
   "historico_trocas": []
 }
