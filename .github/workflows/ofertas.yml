@@ -59,10 +59,7 @@ jobs:
         if: github.event.inputs.diagnostico == ''
         run: |
           mkdir _site
-          for f in index.html admin.html produtos.json; do
-            if [ -f "$f" ]; then cp "$f" _site/; else echo "AVISO: $f não está na raiz do repositório"; fi
-          done
-          [ -f _site/index.html ] || { echo "ERRO: index.html precisa estar na raiz do repositório"; exit 1; }
+          cp index.html admin.html produtos.json _site/
           [ -d fotos ] && cp -r fotos _site/ || true
           [ -f CNAME ] && cp CNAME _site/ || true
 
