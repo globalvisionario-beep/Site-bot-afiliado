@@ -1,14 +1,9 @@
 {
   "site": {
-    "titulo": "Achadinhos da Shopee",
+    "titulo": "Achadinhos da Shope",
     "nome": "Achadinhos",
     "subtitulo": "Digite o número que aparece no vídeo e vá direto ao produto.",
-    "redes": {
-      "Instagram": "",
-      "TikTok": "",
-      "WhatsApp": "",
-      "Telegram": ""
-    }
+    "redes": {}
   },
   "atualizado_em": "2026-10-24T14:52:45-03:00",
   "produtos": [],
