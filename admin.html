@@ -42,12 +42,36 @@ dialog::backdrop{background:rgba(30,10,25,.55)}dialog h2{margin-bottom:6px}
 .rod{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;position:sticky;bottom:-22px;padding:12px 0;background:var(--card)}
 .hist p{margin:0;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.hist span{color:var(--muted)}
 .sv{position:fixed;left:50%;bottom:20px;transform:translate(-50%,90px);padding:12px 20px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;font-size:14px;transition:.25s;z-index:30;max-width:92vw}.sv.on{transform:translate(-50%,0)}.sv.x{background:var(--bad);color:#fff}
+
+.tela{padding-top:4vh}
+.marca{display:flex;align-items:center;gap:10px}.logo{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--g1),var(--g2));font-size:18px;transform:rotate(-6deg)}
+.hero{position:relative;overflow:hidden;margin:18px 0 0;padding:clamp(24px,5vw,44px);border-radius:32px;color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:var(--sh)}
+.hero>*{position:relative}
+.bolha{position:absolute;border-radius:50%;background:rgba(255,255,255,.14);animation:flut 9s ease-in-out infinite}
+.b1{width:200px;height:200px;right:-50px;top:-60px}.b2{width:110px;height:110px;right:24%;bottom:-36px;animation-delay:-3s}.b3{width:64px;height:64px;left:48%;top:14px;animation-delay:-6s}
+@keyframes flut{50%{transform:translateY(-16px) scale(1.06)}}
+.sel{display:inline-block;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.2);font-weight:700;font-size:13px}
+.hero h1{margin:12px 0 8px;font-size:clamp(30px,7vw,52px);line-height:1.02}.hero h1 em{font-style:italic;color:#FFE1EC}
+.hero .sub{margin:0;max-width:44ch;color:#fff;opacity:.95;font-size:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:-24px 14px 0;position:relative}
+.st{padding:12px 8px;text-align:center;border-radius:20px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh)}
+.st b{display:block;font:800 clamp(20px,5vw,28px) "Fraunces",serif;color:var(--accent)}.st span{font-size:12px;color:var(--muted)}
+.faixa{overflow:hidden;margin:22px 0 0;border-block:1px dashed var(--line);padding:9px 0;white-space:nowrap}
+.faixa div{display:inline-block;animation:rola 34s linear infinite}.faixa span{margin:0 22px;font-weight:700;font-size:14px;color:var(--lilac)}
+@keyframes rola{to{transform:translateX(-50%)}}
+.lin{opacity:0;animation:ent .5s forwards;transition:transform .25s,border-color .25s,box-shadow .25s}
+.lin:hover{transform:translateY(-4px) rotate(-.3deg);border-color:var(--accent);box-shadow:var(--sh)}
+@keyframes ent{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.bt{transition:transform .2s,box-shadow .2s,border-color .2s}.bt:hover{transform:translateY(-2px)}.bt.p:hover{box-shadow:0 8px 20px -8px var(--g1)}
+.card{animation:ent .5s both}dialog[open]{animation:pop .3s}@keyframes pop{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.lin{opacity:1}}
 </style>
 </head>
 <body>
 <main id="lock" class="wrap tela">
-  <h1>🔐 Painel do site</h1>
-  <p id="lk-sub">Área só para a administradora.</p>
+  <section class="hero"><i class="bolha b1"></i><i class="bolha b2"></i><i class="bolha b3"></i>
+    <span class="sel">🔐 Área restrita</span><h1>Painel do <em>site</em></h1><p class="sub" id="lk-sub">Área só para a administradora.</p></section>
+  <div style="height:16px"></div>
   <div class="card">
     <form id="f-unlock" hidden>
       <label for="u-senha">Senha do painel</label><input id="u-senha" type="password" autocomplete="current-password" required>
@@ -71,8 +95,12 @@ dialog::backdrop{background:rgba(30,10,25,.55)}dialog h2{margin-bottom:6px}
 </main>
 
 <div id="app" hidden>
-  <nav class="nav"><div class="wrap"><b>🛍️ Painel</b><span><button class="bt" id="tema" type="button" aria-label="Alternar tema">🌙</button> <a class="bt" href="./" target="_blank" style="text-decoration:none;display:inline-block">Ver site</a> <button class="bt" id="sair" type="button">Sair</button></span></div></nav>
+  <nav class="nav"><div class="wrap"><b class="marca"><span class="logo" aria-hidden="true">🛍️</span>Painel</b><span><button class="bt" id="tema" type="button" aria-label="Alternar tema">🌙</button> <a class="bt" href="./" target="_blank" style="text-decoration:none;display:inline-block">Ver site</a> <button class="bt" id="sair" type="button">Sair</button></span></div></nav>
   <div class="wrap">
+    <section class="hero"><i class="bolha b1"></i><i class="bolha b2"></i><i class="bolha b3"></i>
+      <span class="sel">✨ Sua central de ofertas</span><h1>Cuide dos seus <em>achadinhos</em></h1><p class="sub">Edite produtos, fotos e textos aqui. O site se atualiza sozinho.</p></section>
+    <div class="stats"><div class="st"><b id="n1">0</b><span>produtos</span></div><div class="st"><b id="n2">0</b><span>no site</span></div><div class="st"><b id="n3">0</b><span>fixos</span></div></div>
+    <div class="faixa" aria-hidden="true"><div id="faixa"></div></div>
     <div class="abas" role="tablist"><button class="bt aba" role="tab" data-a="p" aria-selected="true">Produtos</button><button class="bt aba" role="tab" data-a="s" aria-selected="false">Site</button><button class="bt aba" role="tab" data-a="b" aria-selected="false">Bot</button></div>
 
     <section id="a-p"><div class="topo"><input id="q" placeholder="Buscar por número ou nome" style="max-width:320px"><button class="bt p" id="novo" type="button">+ Novo produto</button></div><div class="lista" id="lista"></div></section>
@@ -176,10 +204,11 @@ document.querySelectorAll(".aba").forEach(b=>b.onclick=()=>{document.querySelect
   ["p","s","b"].forEach(a=>$("#a-"+a).hidden=a!==b.dataset.a)});
 /* desenho */
 function desenhar(){
+  $("#n1").textContent=dados.produtos.length;$("#n2").textContent=dados.produtos.filter(p=>p.nome&&p.link&&!p.oculto).length;$("#n3").textContent=dados.produtos.filter(p=>p.fixo).length;
   const q=$("#q").value.trim().toLowerCase(),l=$("#lista");l.replaceChildren();
   const ps=[...dados.produtos].sort((a,b)=>b.codigo-a.codigo).filter(p=>!q||String(p.codigo)===q||(p.nome||p.busca||"").toLowerCase().includes(q));
   if(!ps.length)l.appendChild(el("p","","Nenhum produto ainda. Toque em “+ Novo produto”."));
-  ps.forEach(p=>{const c=el("div","lin");
+  ps.forEach((p,ix)=>{const c=el("div","lin");c.style.animationDelay=Math.min(ix*45,450)+"ms";
     if(p.imagem){const i=el("img");i.src=p.imagem;i.alt="";c.appendChild(i)}else c.appendChild(el("div","sf","🛍️"));
     const t=el("div");t.appendChild(el("h3","","Nº "+p.codigo+" · "+(p.nome||"Aguardando o bot")));
     t.appendChild(el("p","",(p.preco?brl(p.preco)+" · ":"")+(p.categoria||"sem categoria")));
@@ -239,6 +268,7 @@ F("f-prod").onsubmit=async e=>{e.preventDefault();const er=m=>F("d-erro").textCo
   F("gravar").disabled=true;
   const ok=await aplicar(()=>{const i=dados.produtos.findIndex(p=>p.codigo===editando);if(i>=0)dados.produtos[i]=n;else dados.produtos.push(n);sujos.add(cod)});
   F("gravar").disabled=false;if(ok)dlg.close()};
+{const fx=["💡 Envie a foto direto pelo painel","🔒 Só você entra aqui","📌 Marque “fixo” para o bot não trocar","⏱️ O site atualiza em 1 a 2 minutos","🤖 O bot confere as promoções às 6h"].map(x=>"<span>"+x+"</span>").join("");$("#faixa").innerHTML=fx+fx}
 </script>
 </body>
 </html>
