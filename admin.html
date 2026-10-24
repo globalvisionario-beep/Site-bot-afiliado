@@ -43,34 +43,6 @@ dialog::backdrop{background:rgba(30,10,25,.55)}dialog h2{margin-bottom:6px}
 .hist p{margin:0;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.hist span{color:var(--muted)}
 .sv{position:fixed;left:50%;bottom:20px;transform:translate(-50%,90px);padding:12px 20px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;font-size:14px;transition:.25s;z-index:30;max-width:92vw}.sv.on{transform:translate(-50%,0)}.sv.x{background:var(--bad);color:#fff}
 </style>
-
-<style id="v2">
-:root:root:root{--bg:#120a24;--bg2:#1d1238;--card:#231745;--ink:#F4EEFF;--muted:#B7A9D9;--line:#3a2a66;--accent:#F7B4FF;--ai:#2A0B3D;--lilac:#C7B2FF;--lb:#33245c;--ok:#6FE3B0;--okb:#173d33;--bad:#FF9C94;--star:#FFC857;--g1:#7B3FF2;--g2:#E0449C;--sh:0 22px 50px -22px rgba(123,63,242,.7)}
-:root:root[data-tema=claro]{--bg:#F6F1FF;--bg2:#ECE3FF;--card:#fff;--ink:#22143F;--muted:#6F6290;--line:#DCCFF7;--accent:#7B3FF2;--ai:#fff;--lilac:#6A45C9;--lb:#EEE6FF;--ok:#1F7A55;--okb:#E3F5EC;--bad:#B3261E;--sh:0 22px 50px -24px rgba(123,63,242,.45)}
-body{background:var(--bg);position:relative;overflow-x:hidden}
-body::before,body::after{content:"";position:fixed;z-index:-1;width:60vmax;height:60vmax;border-radius:50%;filter:blur(90px);opacity:.45;pointer-events:none;animation:aur 22s ease-in-out infinite alternate}
-body::before{left:-20vmax;top:-20vmax;background:radial-gradient(circle,var(--g1),transparent 65%)}
-body::after{right:-25vmax;bottom:-25vmax;background:radial-gradient(circle,var(--g2),transparent 65%);animation-delay:-11s}
-:root[data-tema=claro] body::before,:root[data-tema=claro] body::after{opacity:.22}
-@keyframes aur{to{transform:translate(12vmax,8vmax) scale(1.2)}}
-.bt:hover,.ib:hover{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
-
-.nav{background:color-mix(in srgb,var(--bg) 55%,transparent);border-bottom-color:transparent}
-.card,.lin,dialog{background:color-mix(in srgb,var(--card) 75%,transparent);backdrop-filter:blur(16px)}
-dialog{background:var(--card)}dialog[open]{animation:pop .35s cubic-bezier(.2,.8,.2,1)}dialog::backdrop{backdrop-filter:blur(6px)}
-@keyframes pop{from{opacity:0;transform:scale(.92) translateY(20px)}}
-.tela h1{font-size:clamp(34px,8vw,52px);animation:rev .9s cubic-bezier(.2,.8,.2,1) both}.tela .card{animation:rev .9s .2s cubic-bezier(.2,.8,.2,1) both}
-@keyframes rev{from{opacity:0;transform:translateY(28px);filter:blur(8px)}}
-.lin{animation:entra .5s cubic-bezier(.2,.8,.2,1) both;transition:transform .25s,border-color .25s}.lin:hover{transform:translateX(6px);border-color:var(--accent)}
-.lin:nth-child(2){animation-delay:.05s}.lin:nth-child(3){animation-delay:.1s}.lin:nth-child(4){animation-delay:.15s}.lin:nth-child(5){animation-delay:.2s}.lin:nth-child(n+6){animation-delay:.25s}
-@keyframes entra{from{opacity:0;transform:translateY(18px)}}
-.bt{transition:transform .2s,box-shadow .2s,border-color .2s}.bt:hover{transform:translateY(-2px)}
-.bt.p{background:linear-gradient(110deg,var(--g1),var(--g2),var(--g1));background-size:200% 100%;animation:fl 4s linear infinite}@keyframes fl{to{background-position:-200% 0}}
-.aba[aria-selected=true]{box-shadow:0 10px 24px -10px var(--g2)}
-.hist p{animation:entra .5s both}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style>
-<script>try{if(!localStorage.getItem("tema"))document.documentElement.dataset.tema="escuro"}catch(e){document.documentElement.dataset.tema="escuro"}</script>
 </head>
 <body>
 <main id="lock" class="wrap tela">
@@ -173,12 +145,14 @@ async function carregar(){const r=await gh("contents/produtos.json");
 function mesclar(u){const nov=dados.produtos;const lista=u.d.produtos.filter(p=>!apagados.has(p.codigo)).map(p=>sujos.has(p.codigo)?(nov.find(x=>x.codigo===p.codigo)||p):p);
   nov.forEach(p=>{if(!u.d.produtos.some(x=>x.codigo===p.codigo)&&!apagados.has(p.codigo))lista.push(p)});
   return{...u.d,produtos:lista,site:siteSujo?dados.site:u.d.site}}
+async function msgGh(r){let m="";try{m=(await r.json()).message||""}catch(e){}
+  return "O GitHub recusou ("+r.status+")"+(m?": "+m:"")+". Crie uma chave nova com Contents: Read and write, liberada para este repositório."}
 async function salvar(){
   for(let t=0;t<4;t++){
     const r=await gh("contents/produtos.json",{method:"PUT",body:JSON.stringify({message:"Painel: atualização",content:toB64(enc.encode(JSON.stringify(dados,null,2)+"\n")),sha})});
     if(r.ok){sha=(await r.json()).content.sha;sujos.clear();apagados.clear();siteSujo=false;return}
     if(r.status===409||r.status===422){const u=await carregar();dados=mesclar(u);sha=u.sha;continue}
-    if(r.status===401||r.status===403)throw Error("A chave não tem permissão para gravar (Contents: Read and write).");
+    if(r.status===401||r.status===403)throw Error(await msgGh(r));
     throw Error("Erro ao salvar ("+r.status+").")}
   throw Error("Muitas alterações ao mesmo tempo. Tente de novo.")}
 async function aplicar(fn,ok){try{aviso("Salvando…");fn();await salvar();aviso(ok||"Salvo! O site atualiza em 1 a 2 minutos.");desenhar();return true}
@@ -247,7 +221,7 @@ function reduzir(f,max=900){return new Promise((ok,er)=>{const im=new Image(),u=
 F("f-file").onchange=async()=>{const f=F("f-file").files[0];if(!f)return;const m=F("f-fs");m.textContent="Enviando foto…";
   try{const b=await reduzir(f),nome=`fotos/${F("f-codigo").value||"x"}-${Date.now()}.jpg`;
     const r=await gh("contents/"+nome,{method:"PUT",body:JSON.stringify({message:"Painel: foto do produto",content:toB64(b)})});
-    if(!r.ok)throw Error(r.status===403||r.status===401?"A chave não tem permissão para gravar.":"Falha ao enviar ("+r.status+").");
+    if(!r.ok)throw Error(r.status===403||r.status===401?await msgGh(r):"Falha ao enviar ("+r.status+").");
     F("f-img").value=nome;foto(URL.createObjectURL(new Blob([b],{type:"image/jpeg"})));m.textContent="Foto enviada!"}
   catch(e){m.textContent=e.message}};
 F("f-prod").onsubmit=async e=>{e.preventDefault();const er=m=>F("d-erro").textContent=m,g=id=>F(id).value.trim();
