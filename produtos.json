@@ -11,25 +11,6 @@
     }
   },
   "atualizado_em": "2026-10-24T18:20:49-03:00",
-  "produtos": [
-    {
-      "codigo": 1,
-      "busca": "mini triturador eletrico",
-      "categoria": "Cozinha",
-      "dica": "",
-      "itemId": 22399440310,
-      "nome": "Mini Processador de Alimentos Elétrico Triturador Portátil 3 Lâminas Inox Recarregável Branco",
-      "imagem": "https://cf.shopee.com.br/file/br-11134207-820lc-mmkfi6q2ldz8b3",
-      "preco": 22.28,
-      "preco_original": 96.87,
-      "desconto": 77,
-      "nota": 4.6,
-      "vendas": 3288,
-      "em_promocao": true,
-      "verificado_em": "2026-10-24T18:20:49-03:00",
-      "shopId": 1541994310,
-      "link": "https://s.shopee.com.br/9fLvHiNDeq"
-    }
-  ],
+  "produtos": [],
   "historico_trocas": []
 }
