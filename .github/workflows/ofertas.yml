@@ -59,7 +59,8 @@ jobs:
         if: github.event.inputs.diagnostico == ''
         run: |
           mkdir _site
-          cp index.html produtos.json _site/
+          cp index.html admin.html produtos.json _site/
+          [ -d fotos ] && cp -r fotos _site/ || true
           [ -f CNAME ] && cp CNAME _site/ || true
 
       - uses: actions/configure-pages@v5
