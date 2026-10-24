@@ -10,7 +10,7 @@
       "Telegram": ""
     }
   },
-  "atualizado_em": "2026-10-24T15:11:09-03:00",
+  "atualizado_em": "2026-10-24T18:18:50-03:00",
   "produtos": [
     {
       "codigo": 1,
@@ -24,11 +24,11 @@
       "preco_original": 96.87,
       "desconto": 77,
       "nota": 4.6,
-      "vendas": 3258,
+      "vendas": 3288,
       "em_promocao": true,
-      "verificado_em": "2026-10-24T15:11:09-03:00",
+      "verificado_em": "2026-10-24T18:18:50-03:00",
       "shopId": 1541994310,
-      "link": "https://s.shopee.com.br/60SbWsxW84"
+      "link": "https://s.shopee.com.br/9fLvHiNDeq"
     },
     {
       "codigo": 2,
@@ -42,9 +42,9 @@
       "preco_original": 287.38,
       "desconto": 92,
       "nota": 4.7,
-      "vendas": 3642,
+      "vendas": 3994,
       "em_promocao": true,
-      "verificado_em": "2026-10-24T15:11:09-03:00",
+      "verificado_em": "2026-10-24T18:18:50-03:00",
       "shopId": 1921399168,
       "link": "https://s.shopee.com.br/gR6ZAvTv5"
     }
