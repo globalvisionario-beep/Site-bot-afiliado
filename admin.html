@@ -103,7 +103,7 @@ dialog::backdrop{background:rgba(30,10,25,.55)}dialog h2{margin-bottom:6px}
     <div class="faixa" aria-hidden="true"><div id="faixa"></div></div>
     <div class="abas" role="tablist"><button class="bt aba" role="tab" data-a="p" aria-selected="true">Produtos</button><button class="bt aba" role="tab" data-a="s" aria-selected="false">Site</button><button class="bt aba" role="tab" data-a="b" aria-selected="false">Bot</button></div>
 
-    <section id="a-p"><div class="topo"><input id="q" placeholder="Buscar por número ou nome" style="max-width:320px"><button class="bt p" id="novo" type="button">+ Novo produto</button></div><div class="lista" id="lista"></div></section>
+    <section id="a-p"><div class="topo"><input id="q" placeholder="Buscar por número ou nome" style="max-width:320px"><span><button class="bt" id="recarregar" type="button">↻ Atualizar</button> <button class="bt p" id="novo" type="button">+ Novo produto</button></span></div><div class="lista" id="lista"></div></section>
 
     <section id="a-s" hidden><div class="card"><h2>Textos e redes</h2>
       <label for="t-titulo">Título</label><input id="t-titulo"><label for="t-nome">Nome curto <small>(canto superior)</small></label><input id="t-nome">
@@ -118,23 +118,20 @@ dialog::backdrop{background:rgba(30,10,25,.55)}dialog h2{margin-bottom:6px}
 
 <dialog id="dlg"><form id="f-prod">
   <h2 id="d-tit">Produto</h2>
+  <p style="color:var(--muted);margin:0 0 6px;font-size:14px">Cole o link de afiliado e escolha o número e a categoria. O bot preenche nome, foto, preço, nota e vendas sozinho.</p>
+  <label for="f-link">Link de afiliado da Shopee</label><input id="f-link" placeholder="https://s.shopee.com.br/..." required>
   <div class="g2">
     <div><label for="f-codigo">Número no vídeo</label><input id="f-codigo" type="number" min="1" required></div>
-    <div><label for="f-cat">Categoria</label><input id="f-cat" placeholder="Cozinha"></div>
+    <div><label for="f-cat">Categoria</label><input id="f-cat" list="cats" placeholder="Cozinha"><datalist id="cats"></datalist></div>
   </div>
-  <label for="f-nome">Nome do produto</label><input id="f-nome">
-  <label for="f-dica">Sua dica <small>(frase curta que aparece no card)</small></label><input id="f-dica">
-  <label for="f-link">Seu link de afiliado</label><input id="f-link" placeholder="https://shope.ee/...">
-  <label>Foto</label><div class="foto"><img id="prev" alt="" hidden><div><input id="f-file" type="file" accept="image/*"><small id="f-fs">Enviar uma foto reduz e guarda no seu site. Ou cole um endereço abaixo.</small></div></div>
-  <input id="f-img" placeholder="fotos/... ou https://..." style="margin-top:8px">
-  <div class="g2"><div><label for="f-preco">Preço (R$)</label><input id="f-preco" inputmode="decimal"></div><div><label for="f-orig">Preço antes (R$)</label><input id="f-orig" inputmode="decimal"></div>
-  <div><label for="f-nota">Nota</label><input id="f-nota" inputmode="decimal"></div><div><label for="f-vendas">Vendas</label><input id="f-vendas" inputmode="numeric"></div></div>
-  <small id="f-auto" hidden>Preço, nota e vendas deste produto são preenchidos pelo bot.</small>
-  <label class="ck"><input id="f-fixo" type="checkbox"><span>Não trocar automaticamente<small>O bot não substitui este produto quando a promoção acabar.</small></span></label>
-  <label class="ck"><input id="f-oculto" type="checkbox"><span>Ocultar do site<small>Fica guardado aqui, mas não aparece para as visitantes.</small></span></label>
-  <details><summary>Opções do bot</summary>
-    <label for="f-busca">Palavra-chave de busca</label><input id="f-busca" placeholder="mini triturador eletrico">
-    <label for="f-item">itemId da Shopee <small>(opcional)</small></label><input id="f-item" inputmode="numeric">
+  <details><summary>Opções avançadas</summary>
+    <label for="f-dica">Sua dica <small>(frase curta que aparece no card)</small></label><input id="f-dica">
+    <label>Foto própria <small>(opcional; sem ela vale a foto da Shopee)</small></label><div class="foto"><img id="prev" alt="" hidden><div><input id="f-file" type="file" accept="image/*"><small id="f-fs"></small></div></div>
+    <input id="f-img" placeholder="fotos/... ou https://..." style="margin-top:8px">
+    <label class="ck"><input id="f-fixo" type="checkbox"><span>Não trocar automaticamente<small>O bot não substitui este produto.</small></span></label>
+    <label class="ck"><input id="f-oculto" type="checkbox"><span>Ocultar do site<small>Fica guardado aqui, mas não aparece para as visitantes.</small></span></label>
+    <label for="f-busca">Palavra-chave de busca <small>(o bot cria sozinho; mude se as trocas vierem erradas)</small></label><input id="f-busca">
+    <label for="f-item">itemId da Shopee <small>(só se o bot não conseguir ler o link)</small></label><input id="f-item" inputmode="numeric">
     <div class="g2"><div><label for="f-pmin">Preço mínimo do substituto</label><input id="f-pmin" inputmode="decimal"></div><div><label for="f-pmax">Preço máximo do substituto</label><input id="f-pmax" inputmode="decimal"></div></div>
     <label for="f-obrig">Palavras obrigatórias <small>(separadas por vírgula)</small></label><input id="f-obrig"></details>
   <p class="erro" id="d-erro" role="alert"></p>
@@ -210,14 +207,15 @@ function desenhar(){
   if(!ps.length)l.appendChild(el("p","","Nenhum produto ainda. Toque em “+ Novo produto”."));
   ps.forEach((p,ix)=>{const c=el("div","lin");c.style.animationDelay=Math.min(ix*45,450)+"ms";
     if(p.imagem){const i=el("img");i.src=p.imagem;i.alt="";c.appendChild(i)}else c.appendChild(el("div","sf","🛍️"));
-    const t=el("div");t.appendChild(el("h3","","Nº "+p.codigo+" · "+(p.nome||"Aguardando o bot")));
+    const t=el("div");t.appendChild(el("h3","","Nº "+p.codigo+" · "+(p.nome||"Aguardando o bot preencher")));
     t.appendChild(el("p","",(p.preco?brl(p.preco)+" · ":"")+(p.categoria||"sem categoria")));
     const g=el("div","tags");
-    if(!p.nome)g.appendChild(el("span","tg","Bot vai escolher"));if(p.fixo)g.appendChild(el("span","tg","Fixo"));if(p.oculto)g.appendChild(el("span","tg","Oculto"));
+    if(!p.nome&&!p.erro_link)g.appendChild(el("span","tg","Aguardando o bot"));if(p.erro_link)g.appendChild(el("span","tg","Link não lido"));if(p.esgotado)g.appendChild(el("span","tg","Esgotado"));if(p.trocar_agora)g.appendChild(el("span","tg","Troca pedida"));if(p.fixo)g.appendChild(el("span","tg","Fixo"));if(p.oculto)g.appendChild(el("span","tg","Oculto"));
     if(p.em_promocao)g.appendChild(el("span","tg o","-"+p.desconto+"%"));if(p.em_promocao===false)g.appendChild(el("span","tg","Sem promoção"));
-    t.appendChild(g);c.appendChild(t);
+    t.appendChild(g);if(p.erro_link)t.appendChild(el("p","",p.erro_link));if(!p.nome&&!p.erro_link)t.appendChild(el("p","","Salvo! O bot preenche nome, foto e preço em 1 a 2 minutos. Toque em ↻ Atualizar."));c.appendChild(t);
     const b=el("div","bts"),mk=(x,f,k)=>{const e=el("button","bt "+(k||""),x);e.type="button";e.onclick=f;b.appendChild(e)};
     mk("Editar",()=>abrir(p.codigo));
+    if(p.itemId&&!p.trocar_agora)mk("Esgotou? Trocar",()=>{if(confirm("Pedir ao bot para trocar o produto Nº "+p.codigo+" agora?"))aplicar(()=>{p.trocar_agora=true;sujos.add(p.codigo)},"Pedido enviado! O bot troca o produto em 1 a 2 minutos.")});
     mk(p.oculto?"Mostrar no site":"Ocultar",()=>aplicar(()=>{if(p.oculto)delete p.oculto;else p.oculto=true;sujos.add(p.codigo)}));
     mk("Remover",()=>{if(confirm("Remover o produto Nº "+p.codigo+"?"))aplicar(()=>{dados.produtos=dados.produtos.filter(x=>x.codigo!==p.codigo);apagados.add(p.codigo)})},"r");
     c.appendChild(b);l.appendChild(c)});
@@ -228,6 +226,7 @@ function desenhar(){
   if(!hs.length)h.appendChild(el("p","","Nenhuma troca ainda."));
   hs.forEach(x=>{const p=el("p");p.append("Nº "+x.codigo+": "+(x.de||"?")+" → "+x.para+" ("+brl(x.preco)+") ");p.appendChild(el("span","",new Date(x.data).toLocaleDateString("pt-BR")));h.appendChild(p)})}
 $("#q").oninput=desenhar;
+$("#recarregar").onclick=async()=>{try{const u=await carregar();dados=u.d;sha=u.sha;desenhar();aviso("Lista atualizada.")}catch(e){aviso(e.message,true)}};
 $("#s-salvar").onclick=()=>aplicar(()=>{const redes={};["Instagram","TikTok","WhatsApp","Telegram","YouTube"].forEach(n=>{const v=$("#r-"+n).value.trim();if(v)redes[n]=v});
   dados.site={...dados.site,titulo:$("#t-titulo").value.trim(),nome:$("#t-nome").value.trim(),subtitulo:$("#t-sub").value.trim(),redes};siteSujo=true},"Site salvo!");
 $("#rodar").onclick=async()=>{try{const rr=await(await gh("")).json();const r=await gh("actions/workflows/ofertas.yml/dispatches",{method:"POST",body:JSON.stringify({ref:rr.default_branch||"main"})});
@@ -239,9 +238,10 @@ function foto(src){const i=F("prev");i.hidden=!src;if(src)i.src=src}
 function abrir(cod){editando=cod??null;const p=cod==null?{}:dados.produtos.find(x=>x.codigo===cod);
   F("d-tit").textContent=cod==null?"Novo produto":"Editar Nº "+cod;F("d-erro").textContent="";
   F("f-codigo").value=p.codigo??Math.max(0,...dados.produtos.map(x=>x.codigo))+1;F("f-codigo").readOnly=cod!=null;
-  const v={nome:p.nome,cat:p.categoria,dica:p.dica,link:p.link,img:p.imagem,preco:p.preco,orig:p.preco_original,nota:p.nota,vendas:p.vendas,busca:p.busca,item:p.itemId,pmin:p.preco_minimo,pmax:p.preco_maximo,obrig:(p.palavras_obrigatorias||[]).join(", ")};
-  for(const k in v)F("f-"+k).value=v[k]??"";F("f-fixo").checked=!!p.fixo;F("f-oculto").checked=!!p.oculto;F("f-file").value="";
-  const auto=!!p.itemId&&!!p.nome;["preco","orig","nota","vendas"].forEach(k=>F("f-"+k).disabled=auto);F("f-auto").hidden=!auto;foto(p.imagem);dlg.showModal()}
+  const v={cat:p.categoria,link:p.link,dica:p.dica,img:p.imagem_propria,busca:p.busca,item:p.itemId,pmin:p.preco_minimo,pmax:p.preco_maximo,obrig:(p.palavras_obrigatorias||[]).join(", ")};
+  for(const k in v)F("f-"+k).value=v[k]??"";F("f-fixo").checked=!!p.fixo;F("f-oculto").checked=!!p.oculto;F("f-file").value="";F("f-fs").textContent="";
+  const dl=F("cats");dl.replaceChildren();[...new Set(dados.produtos.map(x=>x.categoria).filter(Boolean))].forEach(c=>{const o=el("option");o.value=c;dl.appendChild(o)});
+  foto(p.imagem_propria);dlg.showModal()}
 $("#novo").onclick=()=>abrir(null);$("#cancelar").onclick=()=>dlg.close();
 F("f-img").oninput=()=>foto(F("f-img").value.trim());
 function reduzir(f,max=900){return new Promise((ok,er)=>{const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");
@@ -256,17 +256,17 @@ F("f-file").onchange=async()=>{const f=F("f-file").files[0];if(!f)return;const m
 F("f-prod").onsubmit=async e=>{e.preventDefault();const er=m=>F("d-erro").textContent=m,g=id=>F(id).value.trim();
   const cod=parseInt(g("f-codigo"));if(!cod||cod<1)return er("Número inválido.");
   if(editando==null&&dados.produtos.some(p=>p.codigo===cod))return er("Esse número já existe. Escolha outro.");
-  const link=g("f-link");if(link&&!/^https:\/\//.test(link))return er("O link precisa começar com https://");
-  if(!(link&&g("f-nome"))&&!g("f-item")&&!g("f-busca"))return er("Preencha nome e link, ou deixe uma palavra-chave para o bot escolher.");
-  const base=editando!=null?dados.produtos.find(p=>p.codigo===editando):{codigo:cod},auto=!!base.itemId&&!!base.nome;
-  const n={...base,codigo:cod,nome:g("f-nome"),categoria:g("f-cat"),dica:g("f-dica"),link,imagem:g("f-img"),busca:g("f-busca"),itemId:parseInt(g("f-item"))||undefined,
+  const link=g("f-link");if(!/^https:\/\//.test(link))return er("Cole o link de afiliado da Shopee (começa com https://).");
+  if(!/shopee|shope\.ee/i.test(link))return er("Esse link não parece ser da Shopee.");
+  const base=editando!=null?dados.produtos.find(p=>p.codigo===editando):{codigo:cod},mudou=editando!=null&&base.link!==link;
+  const n={...base,codigo:cod,categoria:g("f-cat"),link,dica:g("f-dica"),imagem_propria:g("f-img"),busca:g("f-busca"),itemId:parseInt(g("f-item"))||undefined,
     fixo:F("f-fixo").checked||undefined,oculto:F("f-oculto").checked||undefined,preco_minimo:num("f-pmin"),preco_maximo:num("f-pmax"),
     palavras_obrigatorias:g("f-obrig")?g("f-obrig").split(",").map(s=>s.trim()).filter(Boolean):undefined};
-  if(!auto){Object.assign(n,{preco:num("f-preco"),preco_original:num("f-orig"),nota:num("f-nota"),vendas:parseInt(g("f-vendas"))||undefined});
-    if(n.preco&&n.preco_original>n.preco){n.desconto=Math.round((1-n.preco/n.preco_original)*100);n.em_promocao=true}else{delete n.desconto;delete n.em_promocao;if(n.preco&&!n.preco_original)n.preco_original=n.preco}}
+  if(mudou){["nome","shopId","preco","preco_original","desconto","nota","vendas","imagem","em_promocao","esgotado","erro_link","trocar_agora","verificado_em"].forEach(k=>delete n[k]);
+    if(parseInt(g("f-item"))===base.itemId)delete n.itemId;if(g("f-busca")===(base.busca||""))delete n.busca}
   for(const k in n)if(n[k]===undefined||n[k]===""||(typeof n[k]==="number"&&isNaN(n[k])))delete n[k];
   F("gravar").disabled=true;
-  const ok=await aplicar(()=>{const i=dados.produtos.findIndex(p=>p.codigo===editando);if(i>=0)dados.produtos[i]=n;else dados.produtos.push(n);sujos.add(cod)});
+  const ok=await aplicar(()=>{const i=dados.produtos.findIndex(p=>p.codigo===editando);if(i>=0)dados.produtos[i]=n;else dados.produtos.push(n);sujos.add(cod)},"Salvo! O bot preenche o produto em 1 a 2 minutos.");
   F("gravar").disabled=false;if(ok)dlg.close()};
 {const fx=["💡 Envie a foto direto pelo painel","🔒 Só você entra aqui","📌 Marque “fixo” para o bot não trocar","⏱️ O site atualiza em 1 a 2 minutos","🤖 O bot confere as promoções às 6h"].map(x=>"<span>"+x+"</span>").join("");$("#faixa").innerHTML=fx+fx}
 </script>
