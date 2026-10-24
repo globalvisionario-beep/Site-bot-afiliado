@@ -189,7 +189,7 @@ function cartao(p,grande){
   if(p.nota){const e=el("span","est","★★★★★");e.style.setProperty("--p",Math.min(100,p.nota/5*100)+"%");m.append(e,el("span","",Number(p.nota).toLocaleString("pt-BR")))}
   if(p.vendas)m.appendChild(el("span","",vend(p.vendas)));
   c.appendChild(m);
-  if(p.em_promocao===false)c.appendChild(el("p","aviso","A promoção pode ter acabado. Confira o preço na Shopee."));
+  if(p.esgotado)c.appendChild(el("p","aviso","Produto esgotado no momento. Em breve troco por outro."));else if(p.em_promocao===false)c.appendChild(el("p","aviso","A promoção pode ter acabado. Confira o preço na Shopee."));
   const b=el("a","botao","Ver na Shopee ✨");b.href=p.link;b.target="_blank";b.rel="noopener sponsored";c.appendChild(b);
   i.appendChild(c);if(io&&!grande)io.observe(i);else i.classList.add("on");return i}
 
