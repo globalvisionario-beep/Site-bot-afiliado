@@ -11,24 +11,6 @@
     }
   },
   "atualizado_em": "2026-10-24T14:44:42-03:00",
-  "produtos": [
-    {
-      "codigo": 2,
-      "busca": "mini processador eletrico",
-      "categoria": "Cozinha",
-      "dica": "",
-      "itemId": 58217626503,
-      "nome": "mini processador de alimentos elétrico picador de alho triturador de pimenta 350ml",
-      "imagem": "https://cf.shopee.com.br/file/sg-11134201-825b6-msrflnne6qys46",
-      "preco": 22.99,
-      "preco_original": 287.38,
-      "desconto": 92,
-      "nota": 4.7,
-      "vendas": 3642,
-      "em_promocao": true,
-      "verificado_em": "2026-10-24T14:44:42-03:00",
-      "link": "https://s.shopee.com.br/qkWiSV7jz"
-    }
-  ],
+  "produtos": [],
   "historico_trocas": []
 }
