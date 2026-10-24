@@ -1,18 +1,28 @@
 {
   "site": {
-    "titulo": "Achadinhos da Shope",
+    "titulo": "Achadinhos da Shopee",
     "nome": "Achadinhos",
     "subtitulo": "Digite o número que aparece no vídeo e vá direto ao produto.",
-    "redes": {}
+    "redes": {
+      "Instagram": "",
+      "TikTok": "",
+      "WhatsApp": "",
+      "Telegram": ""
+    }
   },
-  "atualizado_em": "2026-10-24T15:10:15-03:00",
+  "atualizado_em": null,
   "produtos": [
     {
       "codigo": 1,
-      "nome": "Fatiador Ralador 16 em 1 Profissional de Cozinha em Aço Inoxidável Multifuncional para Legumes Frutas e Verduras",
-      "link": "https://s.shopee.com.br/6fiIEqlwjG",
-      "nota": 4.8,
-      "vendas": 40
+      "busca": "mini triturador eletrico",
+      "categoria": "Cozinha",
+      "dica": ""
+    },
+    {
+      "codigo": 2,
+      "busca": "mini processador eletrico",
+      "categoria": "Cozinha",
+      "dica": ""
     }
   ],
   "historico_trocas": []
