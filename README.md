@@ -61,6 +61,28 @@ No começo do `produtos.json`, em `site`, troque `titulo`, `nome` e `subtitulo`.
 
 Destaque "Oferta do dia" (maior desconto), contadores de produtos e desconto médio, faixa animada, filtros por categoria, ordenação, favoritos (💗, ficam salvos no aparelho de cada visitante), botão de compartilhar, "Como funciona", perguntas frequentes e botão de tema claro/escuro.
 
+## Painel de administração (admin.html)
+
+Além do site público, existe o painel em `seu-site/admin.html`. Ele não aparece em nenhum botão do site e não é indexado pelo Google. Nele você adiciona, edita, oculta e remove produtos, envia fotos, muda textos e redes sociais, vê o histórico de trocas e roda o bot na hora.
+
+**Segurança.** Quem abrir o `admin.html` só vê a tela de entrada. Quem protege de verdade é o GitHub: sem a sua chave (token), ninguém consegue gravar nada. A chave fica guardada só no seu aparelho, criptografada com a senha que você criar. Use o painel só em aparelhos seus e nunca compartilhe a chave. Se ela vazar, apague-a em *GitHub > Settings > Developer settings > Personal access tokens* e crie outra.
+
+**Primeiro acesso.**
+1. Crie uma chave: *GitHub > Settings > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token*.
+2. Em *Repository access*, escolha *Only select repositories* e marque só o seu repositório.
+3. Em *Repository permissions*, ponha **Contents: Read and write** e **Actions: Read and write**.
+4. Copie o token, abra `seu-site/admin.html`, cole junto com o nome do repositório (`usuario/repositorio`) e crie uma senha de pelo menos 8 caracteres.
+5. Nas próximas vezes, só a senha.
+
+**Como as mudanças aparecem.** O painel grava no GitHub e o site é republicado em 1 a 2 minutos. Se o bot e você salvarem ao mesmo tempo, o painel junta as duas mudanças sozinho.
+
+**Produtos no painel.**
+- *Cadastrado à mão* (nome, link, foto e preço): o bot nunca mexe nele.
+- *Só com palavra-chave*: o bot escolhe o melhor produto na próxima execução.
+- *Não trocar automaticamente*: o bot atualiza o preço, mas não substitui quando a promoção acabar.
+- *Ocultar do site*: o produto fica guardado, mas some para as visitantes.
+- Fotos enviadas pelo painel são reduzidas e ficam na pasta `fotos/` do repositório.
+
 ## Usar nos vídeos
 
 Mostre na tela "Produto 12" e deixe o site na bio. Para ir direto ao produto, use `seu-site/#12`.
