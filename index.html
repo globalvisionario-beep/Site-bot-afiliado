@@ -222,7 +222,7 @@ async function iniciar(){
     if(site.nome)$("#marca").textContent=site.nome;if(site.subtitulo)$("#subtitulo").textContent=site.subtitulo;
     Object.entries(site.redes||{}).forEach(([n,u])=>{if(!u)return;const li=el("li"),a=el("a","",n);a.href=u;a.target="_blank";a.rel="noopener";li.appendChild(a);$("#redes").appendChild(li)});
     if(d.atualizado_em)$("#atualizado").textContent="Ofertas conferidas em "+new Date(d.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})+".";
-    produtos=(d.produtos||[]).filter(p=>p.link&&p.nome);
+    produtos=(d.produtos||[]).filter(p=>p.link&&p.nome&&!p.oculto);
   }catch(e){$("#status").textContent="Não foi possível carregar os produtos agora. Tente novamente em instantes."}
   const promo=produtos.filter(p=>p.em_promocao&&p.desconto>0);
   $("#s1").textContent=produtos.length;$("#s2").textContent=(promo.length?Math.round(promo.reduce((a,p)=>a+p.desconto,0)/promo.length):0)+"%";
