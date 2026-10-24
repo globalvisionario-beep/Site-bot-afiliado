@@ -57,6 +57,10 @@ Não reaproveite números de código. O número identifica o produto no vídeo.
 
 No começo do `produtos.json`, em `site`, troque `titulo`, `nome` e `subtitulo`. Em `redes`, cole o link do seu Instagram, TikTok, WhatsApp ou Telegram. Os que ficarem vazios não aparecem. O botão de lua/sol no topo troca entre tema claro e escuro e lembra a escolha do visitante.
 
+## O que o site tem
+
+Destaque "Oferta do dia" (maior desconto), contadores de produtos e desconto médio, faixa animada, filtros por categoria, ordenação, favoritos (💗, ficam salvos no aparelho de cada visitante), botão de compartilhar, "Como funciona", perguntas frequentes e botão de tema claro/escuro.
+
 ## Usar nos vídeos
 
 Mostre na tela "Produto 12" e deixe o site na bio. Para ir direto ao produto, use `seu-site/#12`.
