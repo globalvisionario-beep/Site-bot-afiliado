@@ -239,6 +239,10 @@ def atualizar(cfg, app_id, secret):
     for p in produtos:
         codigo = p.get("codigo")
         try:
+            # 0) Produto cadastrado à mão no painel (tem link, sem itemId): o bot não mexe.
+            if not p.get("itemId") and p.get("link"):
+                continue
+
             # 1) Produto novo, com itemId informado por você: só preenche os dados.
             if p.get("itemId") and not p.get("link"):
                 item = buscar_por_id(p["itemId"], app_id, secret)
@@ -268,6 +272,15 @@ def atualizar(cfg, app_id, secret):
             if atual and atual["preco"] > 0 and atual["desconto"] >= cfg["desconto_minimo_percentual"]:
                 aplicar(p, atual, cfg, agora)
                 log(f"[{codigo}] promoção continua ({atual['desconto']}%): R$ {atual['preco']:.2f}")
+                continue
+
+            # 3b) Produto fixo ou sem palavra-chave: nunca é trocado, só atualiza o preço.
+            if p.get("fixo") or not p.get("busca"):
+                if atual:
+                    aplicar(p, atual, cfg, agora)
+                else:
+                    p["em_promocao"] = False
+                log(f"[{codigo}] promoção acabou, mas o produto é fixo (ou sem busca): mantido.")
                 continue
 
             # 4) Promoção acabou: procura o mesmo tipo de produto em promoção hoje.
