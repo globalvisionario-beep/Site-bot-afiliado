@@ -20,6 +20,7 @@ import sys
 import time
 import unicodedata
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -40,6 +41,8 @@ TEMPLATE_BUSCA = (
 )
 TEMPLATE_ID = "query { productOfferV2(itemId: %ID%, limit: 1) { nodes { %CAMPOS% } } }"
 STOPWORDS = {"para", "com", "sem", "por", "uma", "uns", "das", "dos"}
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+PADROES_ID = [re.compile(r"i\.(\d{5,})\.(\d{5,})"), re.compile(r"/product/(\d{5,})/(\d{5,})")]
 
 
 class ErroAPI(Exception):
@@ -111,6 +114,84 @@ def normalizar(texto):
     return re.sub(r"[^a-z0-9 ]+", " ", texto)
 
 
+def extrair_ids(texto):
+    """Acha (shopId, itemId) em um endereço da Shopee. Devolve None se não achar."""
+    texto = urllib.parse.unquote(urllib.parse.unquote(texto or ""))
+    for padrao in PADROES_ID:
+        m = padrao.search(texto)
+        if m:
+            return int(m.group(1)), int(m.group(2))
+    return None
+
+
+class _SemRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+def resolver_link(url, maximo=6):
+    """Segue o link curto de afiliado e descobre o produto. Devolve (shopId, itemId) ou None."""
+    ids = extrair_ids(url)
+    if ids:
+        return ids
+    abridor = urllib.request.build_opener(_SemRedirect)
+    atual = url
+    for _ in range(maximo):
+        req = urllib.request.Request(atual, headers={"User-Agent": UA, "Accept-Language": "pt-BR,pt;q=0.9"})
+        destino, corpo = None, ""
+        try:
+            with abridor.open(req, timeout=20) as resp:
+                destino = resp.headers.get("Location")
+                corpo = resp.read(300000).decode("utf-8", "replace")
+        except urllib.error.HTTPError as e:
+            destino = e.headers.get("Location")
+        except (urllib.error.URLError, TimeoutError, ValueError):
+            return None
+        for texto in (destino or "", corpo):
+            ids = extrair_ids(texto)
+            if ids:
+                return ids
+        if not destino:
+            return None
+        atual = urllib.parse.urljoin(atual, destino)
+    return None
+
+
+def checar_estoque(shop_id, item_id):
+    """True = esgotado, False = tem estoque, None = não deu para saber (a Shopee pode bloquear)."""
+    if not shop_id:
+        return None
+    url = f"https://shopee.com.br/api/v4/item/get?itemid={int(item_id)}&shopid={int(shop_id)}"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": UA, "Accept": "application/json", "Referer": "https://shopee.com.br/",
+                 "X-Requested-With": "XMLHttpRequest"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            dados = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, ValueError):
+        return None
+    item = (dados or {}).get("data") or {}
+    item = item.get("item", item) if isinstance(item, dict) else {}
+    estoque = item.get("normal_stock", item.get("stock"))
+    if estoque is None:
+        return None
+    return int(para_float(estoque)) <= 0
+
+
+def gerar_busca(nome, quantidade=3):
+    """Cria a palavra-chave de busca a partir do nome (primeiras palavras úteis)."""
+    palavras = []
+    for w in normalizar(nome).split():
+        if len(w) < 3 or w in STOPWORDS or any(c.isdigit() for c in w):
+            continue
+        palavras.append(w)
+        if len(palavras) == quantidade:
+            break
+    return " ".join(palavras)
+
+
 def normalizar_no(n):
     preco = para_float(n.get("price")) or para_float(n.get("priceMin"))
     desconto = int(para_float(n.get("priceDiscountRate")))
@@ -128,6 +209,7 @@ def normalizar_no(n):
         "nota": round(para_float(n.get("ratingStar")), 2),
         "imagem": n.get("imageUrl") or "",
         "link": n.get("offerLink") or "",
+        "shopId": (extrair_ids(n.get("productLink")) or (None,))[0],
         "bruto": n,
     }
 
@@ -205,12 +287,12 @@ def escolher(itens, produto, cfg, excluir_ids):
     return None
 
 
-def aplicar(produto, item, cfg, agora):
+def aplicar(produto, item, cfg, agora, manter_link=False):
     produto.update(
         {
             "itemId": item["itemId"],
             "nome": item["nome"] or produto.get("nome", ""),
-            "imagem": item["imagem"] or produto.get("imagem", ""),
+            "imagem": produto.get("imagem_propria") or item["imagem"] or produto.get("imagem", ""),
             "preco": item["preco"],
             "preco_original": item["preco_original"],
             "desconto": item["desconto"],
@@ -220,8 +302,34 @@ def aplicar(produto, item, cfg, agora):
             "verificado_em": agora,
         }
     )
-    if item["link"]:
+    if item.get("shopId"):
+        produto["shopId"] = item["shopId"]
+    if item["link"] and not manter_link:
         produto["link"] = item["link"]
+
+
+def preencher_por_link(p, cfg, app_id, secret, agora, ids_no_site):
+    """Produto novo com só o link de afiliado: descobre o produto e preenche tudo."""
+    codigo = p.get("codigo")
+    ids = resolver_link(p["link"])
+    if not ids:
+        p["erro_link"] = ("Não consegui ler este link. Copie o endereço normal do produto "
+                          "(termina com i.números.números) ou informe o itemId nas opções avançadas.")
+        log(f"[{codigo}] não consegui descobrir o produto pelo link.")
+        return
+    shop_id, item_id = ids
+    item = buscar_por_id(item_id, app_id, secret)
+    if not item:
+        p["erro_link"] = "Este produto não foi encontrado na API de afiliados da Shopee."
+        log(f"[{codigo}] itemId {item_id} não encontrado na API.")
+        return
+    p.pop("erro_link", None)
+    aplicar(p, item, cfg, agora, manter_link=True)
+    p["shopId"] = item.get("shopId") or shop_id
+    if not p.get("busca"):
+        p["busca"] = gerar_busca(item["nome"], int(cfg.get("palavras_na_busca", 3)))
+    ids_no_site.add(item_id)
+    log(f"[{codigo}] preenchido pelo link: R$ {item['preco']:.2f} | {item['nome'][:50]} | busca: {p['busca']}")
 
 
 # --------------------------------------------------------------------------
@@ -234,29 +342,39 @@ def atualizar(cfg, app_id, secret):
     historico = site.setdefault("historico_trocas", [])
     agora = datetime.now(FUSO).isoformat(timespec="seconds")
     ids_no_site = {p.get("itemId") for p in produtos if p.get("itemId")}
+    minimo = cfg["desconto_minimo_percentual"]
+    verificar = cfg.get("verificar_estoque", True)
+    n_busca = int(cfg.get("palavras_na_busca", 3))
     trocas, erros = 0, 0
 
     for p in produtos:
         codigo = p.get("codigo")
         try:
-            # 0) Produto cadastrado à mão no painel (tem link, sem itemId): o bot não mexe.
+            # A) Produto novo só com o link de afiliado (cadastrado no painel).
+            if not p.get("itemId") and p.get("link") and not p.get("nome"):
+                preencher_por_link(p, cfg, app_id, secret, agora, ids_no_site)
+                continue
+
+            # B) Produto completo cadastrado à mão (sem itemId): o bot não mexe.
             if not p.get("itemId") and p.get("link"):
                 continue
 
-            # 1) Produto novo, com itemId informado por você: só preenche os dados.
-            if p.get("itemId") and not p.get("link"):
+            # C) itemId informado e ainda sem dados: só preenche.
+            if p.get("itemId") and not p.get("nome"):
                 item = buscar_por_id(p["itemId"], app_id, secret)
                 if item:
-                    aplicar(p, item, cfg, agora)
+                    aplicar(p, item, cfg, agora, manter_link=bool(p.get("link")))
+                    if not p.get("busca"):
+                        p["busca"] = gerar_busca(item["nome"], n_busca)
                     log(f"[{codigo}] preenchido com o itemId {item['itemId']}: {item['nome'][:50]}")
                 else:
                     log(f"[{codigo}] itemId {p['itemId']} não foi encontrado na API.")
                 continue
 
-            # 2) Produto novo, só com palavra-chave: escolhe o melhor da busca.
+            # D) Produto novo, só com palavra-chave: escolhe o melhor da busca.
             if not p.get("itemId"):
                 if not p.get("busca"):
-                    log(f"[{codigo}] sem 'busca' nem 'itemId', ignorado.")
+                    log(f"[{codigo}] sem link, 'busca' nem 'itemId': ignorado.")
                     continue
                 novo = escolher(buscar(p["busca"], cfg, app_id, secret), p, cfg, ids_no_site)
                 if novo:
@@ -267,49 +385,54 @@ def atualizar(cfg, app_id, secret):
                     log(f"[{codigo}] nenhum produto com nota/vendas/desconto suficientes para '{p['busca']}'.")
                 continue
 
-            # 3) Produto que já está no site: a promoção ainda existe?
+            # E) Produto que já está no site: ainda vale a pena?
             atual = buscar_por_id(p["itemId"], app_id, secret)
-            if atual and atual["preco"] > 0 and atual["desconto"] >= cfg["desconto_minimo_percentual"]:
+            promo_ok = bool(atual and atual["preco"] > 0 and atual["desconto"] >= minimo)
+            motivo = None
+            if p.get("trocar_agora"):
+                motivo = "marcado como esgotado no painel"
+            elif atual is None:
+                motivo = "sumiu da API (provavelmente esgotado ou removido)"
+            elif not promo_ok:
+                motivo = "voltou ao preço normal"
+            elif verificar and checar_estoque(p.get("shopId"), p["itemId"]) is True:
+                motivo = "esgotado"
+
+            if not motivo:
                 aplicar(p, atual, cfg, agora)
-                log(f"[{codigo}] promoção continua ({atual['desconto']}%): R$ {atual['preco']:.2f}")
+                p.pop("esgotado", None)
+                log(f"[{codigo}] tudo certo ({atual['desconto']}% off): R$ {atual['preco']:.2f}")
                 continue
 
-            # 3b) Produto fixo ou sem palavra-chave: nunca é trocado, só atualiza o preço.
-            if p.get("fixo") or not p.get("busca"):
-                if atual:
-                    aplicar(p, atual, cfg, agora)
-                else:
-                    p["em_promocao"] = False
-                log(f"[{codigo}] promoção acabou, mas o produto é fixo (ou sem busca): mantido.")
-                continue
-
-            # 4) Promoção acabou: procura o mesmo tipo de produto em promoção hoje.
-            log(f"[{codigo}] promoção acabou. Procurando substituto para '{p.get('busca')}'...")
-            if trocas >= int(cfg["max_trocas_por_execucao"]):
+            esgotado = motivo != "voltou ao preço normal"
+            log(f"[{codigo}] precisa trocar: {motivo}.")
+            substituir = bool(p.get("busca")) and (not p.get("fixo") or p.get("trocar_agora"))
+            if substituir and trocas >= int(cfg["max_trocas_por_execucao"]):
                 log(f"[{codigo}] limite de trocas por execução atingido; fica para amanhã.")
                 continue
             if atual:
-                aplicar(p, atual, cfg, agora)  # atualiza o preço, marca como sem promoção
+                aplicar(p, atual, cfg, agora)  # atualiza o preço e marca como sem promoção
             else:
                 p["em_promocao"] = False
-            novo = escolher(buscar(p["busca"], cfg, app_id, secret), p, cfg, ids_no_site)
+            novo = escolher(buscar(p["busca"], cfg, app_id, secret), p, cfg, ids_no_site) if substituir else None
             if novo:
                 historico.append(
-                    {
-                        "data": agora,
-                        "codigo": codigo,
-                        "de": p.get("nome", ""),
-                        "para": novo["nome"],
-                        "preco": novo["preco"],
-                    }
+                    {"data": agora, "codigo": codigo, "de": p.get("nome", ""), "para": novo["nome"],
+                     "preco": novo["preco"], "motivo": motivo}
                 )
                 ids_no_site.add(novo["itemId"])
+                for k in ("shopId", "trocar_agora", "esgotado", "erro_link", "imagem_propria"):
+                    p.pop(k, None)
                 aplicar(p, novo, cfg, agora)
                 p["trocado_em"] = agora
                 trocas += 1
                 log(f"[{codigo}] TROCADO por: R$ {novo['preco']:.2f} | {novo['nome'][:50]}")
             else:
-                log(f"[{codigo}] nenhum substituto bom hoje; mantém o atual e tenta de novo amanhã.")
+                if esgotado:
+                    p["esgotado"] = True
+                else:
+                    p.pop("esgotado", None)
+                log(f"[{codigo}] sem troca ({'produto fixo' if not substituir else 'nenhum substituto bom hoje'}); mantido.")
         except ErroAPI as e:
             erros += 1
             log(f"[{codigo}] ERRO da API: {e}")
