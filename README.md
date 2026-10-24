@@ -6,7 +6,7 @@ Site estático com busca por número, mais um bot que roda sozinho todo dia às 
 
 1. Para cada produto do `produtos.json`, consulta a API de afiliados da Shopee.
 2. Se a promoção continua (desconto de pelo menos 10%), só atualiza preço, nota e vendas.
-3. Se a promoção acabou, busca o mesmo tipo de produto (pela palavra-chave `busca`) e escolhe o **mais barato** que cumpra:
+3. Se a promoção acabou (preço voltou ao normal), se o produto esgotou ou sumiu da API, busca o mesmo tipo de produto (pela palavra-chave `busca`) e escolhe o **mais barato** que cumpra:
    - nota de 4,6 ou mais;
    - 3000 vendas ou mais (se não houver nenhum, aceita 1000 ou mais, nunca menos);
    - em promoção hoje;
@@ -59,7 +59,7 @@ No começo do `produtos.json`, em `site`, troque `titulo`, `nome` e `subtitulo`.
 
 ## O que o site tem
 
-Destaque "Oferta do dia" (maior desconto), contadores de produtos e desconto médio, faixa animada, filtros por categoria, ordenação, favoritos (💗, ficam salvos no aparelho de cada visitante), botão de compartilhar, "Como funciona", perguntas frequentes e botão de tema claro/escuro.
+Contadores de produtos e desconto médio, faixa animada, filtros por categoria, ordenação, favoritos (💗, ficam salvos no aparelho de cada visitante), botão de compartilhar, "Como funciona", perguntas frequentes e botão de tema claro/escuro.
 
 ## Painel de administração (admin.html)
 
@@ -76,12 +76,21 @@ Além do site público, existe o painel em `seu-site/admin.html`. Ele não apare
 
 **Como as mudanças aparecem.** O painel grava no GitHub e o site é republicado em 1 a 2 minutos. Se o bot e você salvarem ao mesmo tempo, o painel junta as duas mudanças sozinho.
 
-**Produtos no painel.**
-- *Cadastrado à mão* (nome, link, foto e preço): o bot nunca mexe nele.
-- *Só com palavra-chave*: o bot escolhe o melhor produto na próxima execução.
-- *Não trocar automaticamente*: o bot atualiza o preço, mas não substitui quando a promoção acabar.
+**Adicionar um produto.** Toque em "+ Novo produto", cole o seu link de afiliado da Shopee, escolha o número do vídeo e a categoria, e salve. O bot descobre o produto pelo link e preenche nome, foto, preço, nota e vendas em 1 a 2 minutos (toque em "↻ Atualizar" para ver). Ele também cria sozinho a palavra-chave que usa para achar substitutos (as 3 primeiras palavras do nome). Se as trocas vierem erradas, mude essa palavra-chave em "Opções avançadas".
+
+Se o bot não conseguir ler o link curto, o produto aparece com "Link não lido". Nesse caso, cole o endereço normal do produto (o que termina com `i.números.números`) ou informe o itemId nas opções avançadas.
+
+**Quando o bot troca um produto.** Em qualquer um destes casos ele procura um substituto igual, em promoção hoje, com nota 4,6 ou mais e 3000 vendas ou mais (aceita 1000 se não houver):
+1. a promoção acabou e o preço voltou ao normal;
+2. o produto esgotou;
+3. o produto sumiu da API de afiliados.
+
+A API oficial da Shopee não informa estoque. Por isso o bot tenta uma checagem extra na página pública do produto, que a Shopee pode bloquear. Quando não dá para saber, ele não troca. Se você perceber que um produto esgotou, use o botão **Esgotou? Trocar** no painel: o bot troca na hora, mesmo que o produto esteja marcado como fixo.
+
+**Outras opções.**
+- *Não trocar automaticamente*: o bot atualiza o preço, mas não substitui. Se esgotar, o site mostra o aviso "Esgotado no momento".
 - *Ocultar do site*: o produto fica guardado, mas some para as visitantes.
-- Fotos enviadas pelo painel são reduzidas e ficam na pasta `fotos/` do repositório.
+- *Foto própria*: enviada pelo painel, reduzida e guardada na pasta `fotos/`. Sem ela vale a foto da Shopee.
 
 ## Usar nos vídeos
 
