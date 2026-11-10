@@ -10,7 +10,7 @@
       "Telegram": ""
     }
   },
-  "atualizado_em": "2026-11-09T06:52:01-03:00",
+  "atualizado_em": "2026-11-10T06:45:39-03:00",
   "produtos": [
     {
       "codigo": 35,
@@ -23,9 +23,9 @@
       "preco_original": 32.53,
       "desconto": 45,
       "nota": 4.7,
-      "vendas": 332,
+      "vendas": 325,
       "em_promocao": true,
-      "verificado_em": "2026-11-09T06:52:01-03:00",
+      "verificado_em": "2026-11-10T06:45:39-03:00",
       "shopId": 344370059,
       "busca": "passadeira premium cozinha"
     }
